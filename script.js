@@ -8,6 +8,7 @@ buttonleft.addEventListener("click", decreaseListItem)
 const buttonright = document.getElementById("rightButton")
 buttonright.addEventListener("click", increaseListItem)
 button.addEventListener("click", runInput);
+
 let city, homeType, yearBuilt, lotArea, squarefootage, numBedrooms, numBathrooms, previousHouses = [], currentIndex = 0, numOfIndices = 0
 let placeholder = localStorage.getItem('previousHouses')
 if (placeholder){
@@ -56,7 +57,7 @@ function formatTrainingData() {
 
 async function trainMachineLearning() {
     const model = tf.sequential();
-    model.add(tf.layers.dense({ inputShape: [13], units: 32, activation: 'relu' }));
+    model.add(tf.layers.dense({ inputShape: [13], units: 32, activation: 'relu', }));
     model.add(tf.layers.dense({ units: 16, activation: 'relu' }));
     model.add(tf.layers.dense({ units: 8, activation: 'relu' }));
     model.add(tf.layers.dense({ units: 1, activation: 'linear' }));
@@ -71,7 +72,7 @@ async function trainMachineLearning() {
     const outputs = tf.tensor2d(trainingdata.map(d => d.output));
 
     await model.fit(inputs, outputs, {
-        epochs: 10,
+        epochs: 30,
         callbacks: {
             onEpochEnd: (epoch, logs) => console.log(`Epoch ${epoch}: loss = ${logs.loss}`)
         }
@@ -130,10 +131,40 @@ function runInput(){
     loadModel().then(model => {
         runPrediction(model);  
     });   
+    numOfIndices ++
+    document.getElementById('currentIndexDisplay').innerHTML ="Current House Index displayed: " + (numOfIndices )
+    
 }
 function decreaseListItem(){
+    if (currentIndex == 0){
+        currentIndex = numOfIndices -1
+    }else{
+        currentIndex--
+    }
     // console.log("left")
+    changeDisplayedPrice()
 }
-function increaseListItem(){
+    function increaseListItem(){
     // console.log("right")
+    if (currentIndex == numOfIndices - 1){
+        currentIndex = 0
+    }else{
+        currentIndex++
+    }
+    if (numOfIndices > 0){
+        changeDisplayedPrice()
+    }
+    
+}
+function changeDisplayedPrice(){
+    document.getElementById("output").innerHTML = "Predicted price: $" + previousHouses[currentIndex].predictedPrice
+    document.getElementById('cityPicker').value = previousHouses[currentIndex].city
+    document.getElementById('type').value = previousHouses[currentIndex].homeType
+    document.getElementById('bedroomNumber').value = previousHouses[currentIndex].numBedrooms
+    document.getElementById('bathroomNumber').value = previousHouses[currentIndex].numBathrooms
+    document.getElementById('year').value = previousHouses[currentIndex].yearBuilt
+    document.getElementById('lotArea').value = previousHouses[currentIndex].lotArea
+    document.getElementById('SquareFoot').value = previousHouses[currentIndex].squarefootage
+    
+    document.getElementById('currentIndexDisplay').innerHTML ="Current House Index displayed: " + (currentIndex + 1)
 }
